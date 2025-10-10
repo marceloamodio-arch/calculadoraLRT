@@ -754,12 +754,10 @@ class NumberUtils:
         """Formatea porcentaje"""
         return f"{percentage:.2f}%".replace('.', ',')
 
-# Inicializar session state
-if 'data_manager' not in st.session_state:
+    # Siempre recargar los datasets al iniciar
     st.session_state.data_manager = DataManager()
     st.session_state.calculator = Calculator(st.session_state.data_manager)
-    st.session_state.results = None
-    st.session_state.input_data = None
+
 
 # Header personalizado
 st.markdown("""
