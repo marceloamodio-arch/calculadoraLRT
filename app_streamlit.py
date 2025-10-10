@@ -37,7 +37,7 @@ st.markdown("""
         --light: #F8F9FA;
         --dark: #343A40;
         --highlight-ripte: #E8F5E8;
-        --highlight-tasa: #E8F0FF;
+        --highlight-tasa: #E8F5E8;
     }
     
     /* Ocultar Deploy y menú de 3 puntos */
@@ -92,8 +92,8 @@ st.markdown("""
     }
     
     .result-card.highlight-tasa {
-        background-color: #E8F0FF;
-        border-left-color: #007bff;
+        background-color: #E8F5E8;
+        border-left-color: #28a745;
     }
     
     .result-card h3 {
@@ -931,7 +931,7 @@ if st.session_state.results is not None:
             <strong>Capital calculado:</strong> {NumberUtils.format_money(results.capital_formula)}
         </div>
         """, unsafe_allow_html=True)
-    # 📊 Últimos Datos Disponibles (a ancho completo, fuera de columnas)
+    # 📊 Últimos Datos Disponibles 
     data_mgr = st.session_state.data_manager
 
     ultimo_ripte_txt = "RIPTE: N/D"
@@ -984,14 +984,22 @@ if st.session_state.results is not None:
 
     # --- Render final con estilo original ---
     st.markdown(f"""
-    <div class="result-card" style="margin-top:20px; width:100%; background-color:#e7f3ff; border:1px solid #b3d9ff;">
-        <h3 style="color:#2E86AB;">📊 Últimos Datos Disponibles</h3>
-        <div class="result-detail" style="font-size:15px; color:#000;">
-            {ultimo_ripte_txt}<br>
-            {ultimo_ipc_txt}<br>
-            {ultima_tasa_txt}<br>
-            {ultimo_piso_txt}
-        </div>
+    <div class="formula-box" style="
+        color: #000;
+        font-family: 'Source Sans Pro', sans-serif;
+        font-size: 14px;
+        border: 1px solid #d3d3d3;
+        border-radius: 8px;
+        padding: 10px 15px;
+        margin-top: 10px;
+        background-color: #fff9c4;
+        width: 100%;
+">
+        <strong>📊 Últimos Datos Disponibles:</strong><br>
+        {ultimo_ripte_txt}<br>
+        {ultimo_ipc_txt}<br>
+        {ultima_tasa_txt}<br>
+        {ultimo_piso_txt}
     </div>
     """, unsafe_allow_html=True)
 
