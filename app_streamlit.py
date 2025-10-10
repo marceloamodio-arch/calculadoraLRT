@@ -939,7 +939,7 @@ if st.session_state.results is not None:
 
     if not data_mgr.tasa_data.empty:
         ultima_tasa = data_mgr.tasa_data.iloc[-1]
-        valor_tasa = ultima_tasa["Valor"]
+        valor_tasa = ultima_tasa["tasa"]
         ultima_tasa_txt = f"TASA ACTIVA: {NumberUtils.format_percentage(valor_tasa)}"
 
     if not data_mgr.pisos_data.empty:
