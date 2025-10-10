@@ -486,9 +486,11 @@ class DataManager:
         if self.tasa_data.empty:
             return
 
-        cols = [str(c).strip().lower() for c in self.tasa_data.columns]
+        # normaliza nombres de columnas (y limpia BOM si existiera)
+        cols = [str(c).strip().lower().replace("\ufeff", "") for c in self.tasa_data.columns]
         self.tasa_data.columns = cols
 
+        # parseo de fechas
         if "desde" in self.tasa_data.columns:
             self.tasa_data["desde"] = self.tasa_data["desde"].apply(safe_parse_date)
         if "hasta" in self.tasa_data.columns:
@@ -500,20 +502,30 @@ class DataManager:
         if "desde" in self.tasa_data.columns:
             self.tasa_data["fecha"] = self.tasa_data["desde"]
 
+        # columna base para la tasa
         base_col = None
         for cand in ("valor", "porcentaje", "tasa"):
             if cand in self.tasa_data.columns:
                 base_col = cand
                 break
-        if base_col is not None:
-            self.tasa_data["tasa"] = pd.to_numeric(self.tasa_data[base_col], errors="coerce")
 
-        keep_cols = [c for c in ["fecha", "tasa", "desde", "hasta"] if c in self.tasa_data.columns]
+        if base_col is not None:
+            # ACEPTA "3,982" o "3.982" → numérico
+            self.tasa_data["tasa"] = (
+                self.tasa_data[base_col]
+                .astype(str)
+                .str.replace(".", "", regex=False)   # opcional: elimina separador de miles
+                .str.replace(",", ".", regex=False)  # coma → punto
+            )
+            self.tasa_data["tasa"] = pd.to_numeric(self.tasa_data["tasa"], errors="coerce")
+
+        # columnas útiles y orden
+        keep_cols = [c for c in ("fecha", "tasa", "desde", "hasta") if c in self.tasa_data.columns]
         if "fecha" in self.tasa_data.columns and "tasa" in self.tasa_data.columns:
             self.tasa_data = (
                 self.tasa_data.dropna(subset=["fecha", "tasa"])
-                         .sort_values("fecha")
-                         .reset_index(drop=True)
+                .sort_values("fecha")
+                .reset_index(drop=True)
             )[keep_cols]
 
     def _norm_ipc(self):
@@ -754,11 +766,14 @@ class NumberUtils:
         """Formatea porcentaje"""
         return f"{percentage:.2f}%".replace('.', ',')
 
-# Inicializar session state
-if 'data_manager' not in st.session_state:
-    st.session_state.data_manager = DataManager()
-    st.session_state.calculator = Calculator(st.session_state.data_manager)
+# --- Carga forzada de datasets en cada ejecución ---
+data_mgr = DataManager()
+st.session_state.data_manager = data_mgr
+st.session_state.calculator = Calculator(data_mgr)
+
+if 'results' not in st.session_state:
     st.session_state.results = None
+if 'input_data' not in st.session_state:
     st.session_state.input_data = None
 
 # Header personalizado
@@ -768,6 +783,19 @@ st.markdown("""
     <h2>TRIBUNAL DE TRABAJO NRO. 2 QUILMES</h2>
 </div>
 """, unsafe_allow_html=True)
+
+# --- Diagnóstico de lectura de datasets ---
+st.write("📂 Ruta del archivo TASA:", PATH_TASA)
+
+try:
+    import os
+    st.write("📁 Existe el archivo?:", os.path.exists(PATH_TASA))
+    df_test = pd.read_csv(PATH_TASA, encoding="utf-8", sep=",", engine="python")
+    st.write("🧾 Primeras filas leídas desde disco:")
+    st.write(df_test.head(3))
+except Exception as e:
+    st.error(f"Error al leer CSV directo: {e}")
+
 
 # Sidebar para formulario
 with st.sidebar:
