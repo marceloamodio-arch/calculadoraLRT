@@ -784,19 +784,6 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# --- Diagnóstico de lectura de datasets ---
-st.write("📂 Ruta del archivo TASA:", PATH_TASA)
-
-try:
-    import os
-    st.write("📁 Existe el archivo?:", os.path.exists(PATH_TASA))
-    df_test = pd.read_csv(PATH_TASA, encoding="utf-8", sep=",", engine="python")
-    st.write("🧾 Primeras filas leídas desde disco:")
-    st.write(df_test.head(3))
-except Exception as e:
-    st.error(f"Error al leer CSV directo: {e}")
-
-
 # Sidebar para formulario
 with st.sidebar:
     st.header("📋 Datos del Caso")
