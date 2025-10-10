@@ -510,12 +510,11 @@ class DataManager:
                 break
 
         if base_col is not None:
-            # ACEPTA "3,982" o "3.982" → numérico
+            # convierte "3,982" o "3.982" → 3.982 (sin eliminar punto decimal)
             self.tasa_data["tasa"] = (
                 self.tasa_data[base_col]
                 .astype(str)
-                .str.replace(".", "", regex=False)   # opcional: elimina separador de miles
-                .str.replace(",", ".", regex=False)  # coma → punto
+                .str.replace(",", ".", regex=False)             
             )
             self.tasa_data["tasa"] = pd.to_numeric(self.tasa_data["tasa"], errors="coerce")
 
@@ -940,29 +939,50 @@ if st.session_state.results is not None:
     ultima_tasa_txt = "TASA ACTIVA: N/D"
     ultimo_piso_txt = "PISO SRT: N/D"
 
+    # --- RIPTE ---
     if not data_mgr.ripte_data.empty:
         ultimo_ripte = data_mgr.ripte_data.iloc[-1]
-        fecha_ripte = ultimo_ripte["fecha"]
-        valor_ripte = ultimo_ripte["ripte"]
-        ultimo_ripte_txt = f"RIPTE {fecha_ripte.month}/{fecha_ripte.year}: {valor_ripte:,.0f}"
+        fecha_ripte = ultimo_ripte.get("fecha")
+        valor_ripte = ultimo_ripte.get("ripte", 0)
+        if pd.notnull(fecha_ripte):
+            ultimo_ripte_txt = f"RIPTE {fecha_ripte.month}/{fecha_ripte.year}: {valor_ripte:,.0f}"
 
+    # --- IPC: mostrar mes y año ---
     if not data_mgr.ipc_data.empty:
         ultimo_ipc = data_mgr.ipc_data.iloc[-1]
-        fecha_ipc = ultimo_ipc["fecha"]
-        variacion_ipc = ultimo_ipc["ipc"]
-        ultimo_ipc_txt = f"IPC {fecha_ipc.month}/{fecha_ipc.year}: {NumberUtils.format_percentage(variacion_ipc)}"
+        mes_ipc = int(ultimo_ipc.get("mes", getattr(ultimo_ipc.get("fecha"), "month", 0)))
+        año_ipc = int(ultimo_ipc.get("año", getattr(ultimo_ipc.get("fecha"), "year", 0)))
+        variacion_ipc = ultimo_ipc.get("ipc", 0)
+        ultimo_ipc_txt = f"IPC {mes_ipc}/{año_ipc}: {NumberUtils.format_percentage(variacion_ipc)}"
 
+    # --- TASA ACTIVA: mostrar último día (columna 'hasta') ---
     if not data_mgr.tasa_data.empty:
+        tasa_vista = data_mgr.tasa_data.copy()
         ultima_tasa = data_mgr.tasa_data.iloc[-1]
-        valor_tasa = ultima_tasa["tasa"]
-        ultima_tasa_txt = f"TASA ACTIVA: {NumberUtils.format_percentage(valor_tasa)}"
+        valor_tasa = ultima_tasa.get("tasa", 0)
+        fecha_hasta = ultima_tasa.get("hasta", None)
+        fecha_txt = ""
+        if pd.notnull(fecha_hasta):
+            fecha_txt = fecha_hasta.strftime("%d/%m/%Y")
+        ultima_tasa_txt = f"TASA ACTIVA {fecha_txt}: {NumberUtils.format_percentage(valor_tasa)}"
 
+    # --- PISO SRT: mostrar período (desde / hasta) y resolución ---
     if not data_mgr.pisos_data.empty:
         ultimo_piso = data_mgr.pisos_data.iloc[-1]
-        norma = ultimo_piso["resol"]
-        monto_piso = ultimo_piso["piso"]
-        ultimo_piso_txt = f"PISO SRT {norma}: {NumberUtils.format_money(monto_piso)}"
+        norma = ultimo_piso.get("resol", "")
+        monto_piso = ultimo_piso.get("piso", 0)
+        desde = ultimo_piso.get("desde", None)
+        hasta = ultimo_piso.get("hasta", None)
+        periodo = ""
+        if pd.notnull(desde) and pd.notnull(hasta):
+            periodo = f"{desde.strftime('%d/%m/%Y')} al {hasta.strftime('%d/%m/%Y')}"
+        elif pd.notnull(desde):
+            periodo = f"Desde {desde.strftime('%d/%m/%Y')}"
+        elif pd.notnull(hasta):
+            periodo = f"Hasta {hasta.strftime('%d/%m/%Y')}"
+        ultimo_piso_txt = f"PISO SRT {norma} ({periodo}): {NumberUtils.format_money(monto_piso)}"
 
+    # --- Render final con estilo original ---
     st.markdown(f"""
     <div class="result-card" style="margin-top:20px; width:100%; background-color:#e7f3ff; border:1px solid #b3d9ff;">
         <h3 style="color:#2E86AB;">📊 Últimos Datos Disponibles</h3>
