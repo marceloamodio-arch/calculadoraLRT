@@ -1,0 +1,2 @@
+# calculadoraLRT
+Calculadora riesgos laborales
