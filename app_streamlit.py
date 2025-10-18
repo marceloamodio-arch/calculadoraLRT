@@ -1067,7 +1067,7 @@ c) Mientras la tasa legal aplicable (Tasa Activa Banco Nación) alcanzó para el
 **LIQUIDACION** que practica la Actuaria en el presente expediente. ** **
 
 --Capital {NumberUtils.format_money(results.capital_base)} 
---Actualización mediante {metodo_usado}, ({mes_final}/{anio_final} {results.ripte_final:,.2f}/ {mes_pmi} {anio_pmi} {results.ripte_pmi:,.2f} = coef {results.ripte_coef:.2f} = {pct_ripte:.0f}%) {NumberUtils.format_money(results.ripte_actualizado)} 
+--Actualización mediante {metodo_usado}, ({get_mes_nombre(data_mgr.ripte_data.iloc[-1]['fecha'].month)}/{data_mgr.ripte_data.iloc[-1]['fecha'].year} {results.ripte_final:,.2f} -último índice publicado- / {mes_pmi} {anio_pmi} {results.ripte_pmi:,.2f} = coef {results.ripte_coef:.2f} = {pct_ripte:.0f}%) {NumberUtils.format_money(results.ripte_actualizado)} 
 --Interés puro del 3% anual desde {input_data.pmi_date.strftime('%d/%m/%Y')} hasta {input_data.final_date.strftime('%d/%m/%Y')} {NumberUtils.format_money(results.interes_puro_3_pct)} 
 --SUBTOTAL {NumberUtils.format_money(total_actualizacion)} 
 
