@@ -1286,7 +1286,7 @@ De la liquidación practicada, traslado a las partes por el plazo de cinco (5) d
                         @page {{
                             size: A4;
                             margin: 2cm;
-                        }}
+                            }}
                         @media print {{
                             body {{
                                 width: 21cm;
