@@ -1202,7 +1202,7 @@ De la liquidación practicada, traslado a las partes por el plazo de cinco (5) d
             **DECRETO 1694/2009:**
             - Actualización de prestaciones según RIPTE
             - Metodología de aplicación del coeficiente
-            
+            """)
     with tab6:
         st.subheader("🖨️ Generar PDF del Expediente")
         
