@@ -1283,10 +1283,10 @@ De la liquidación practicada, traslado a las partes por el plazo de cinco (5) d
                     <meta charset="UTF-8">
                     <title>Cálculo Indemnización - {caratula_expediente}</title>
                     <style>
-                        @page {{{{
+                        @page {{
                             size: A4;
                             margin: 2cm;
-                        }}}}
+                        }}
                         @media print {{
                             body {{
                                 width: 21cm;
