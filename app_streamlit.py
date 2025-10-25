@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 CALCULADORA INDEMNIZACIONES LEY 24.557
-TRIBUNAL DE TRABAJO NRO. 2 QUILMES
-
 Sistema de cálculo de indemnizaciones laborales
 """
 
@@ -779,7 +777,7 @@ if 'input_data' not in st.session_state:
 st.markdown("""
 <div class="main-header">
     <h1>CALCULADORA INDEMNIZACIONES LEY 24.557</h1>
-    <h2>TRIBUNAL DE TRABAJO NRO. 2 QUILMES</h2>
+    <h2>Y ACTUALIZACIONES.</h2>
 </div>
 """, unsafe_allow_html=True)
 
@@ -1145,7 +1143,7 @@ De la liquidación practicada, traslado a las partes por el plazo de cinco (5) d
             - Si el piso es mayor, se aplica el piso proporcional a la incapacidad
             - Se agrega 20% adicional según Art. 3 Ley 26.773 (excepto in itinere)
 
-            **2. ACTUALIZACIÓN RIPTE + 3% (Doctrina "Barrios"):**
+            **2. ACTUALIZACIÓN RIPTE + 3% **
             - Coeficiente RIPTE = RIPTE Final / RIPTE PMI
             - Capital actualizado = Capital Base × Coeficiente RIPTE
             - Interés puro 3% = Capital Actualizado RIPTE × 0.03 × (días / 365.25)
@@ -1168,22 +1166,25 @@ De la liquidación practicada, traslado a las partes por el plazo de cinco (5) d
         
         with info_tab2:
             st.markdown("""
-            ### FUENTES DE DATOS:
+            ### FUENTES DE DATOS:         
+            Los datos se obtienen de las siguientes fuentes:
+            
+            1) Las **VARIACIONES DE LA TASA ACTIVA BANCO NACION** 
+            de la tabla publicada por el Consejo Prof. de Cs. Ec. 
+            [https://trivia.consejo.org.ar/]
+            
+            2) El **INDICE DE INFLACIÓN** se obtiene de la siguiente manera: 
+            desde 2016 en adelante de los datos publicados en **INDEC** - Índice de Precios al Consumidor (IPC)
+            [https://www.indec.gob.ar/](https://www.indec.gob.ar/)
+            Con anterioridad a 2016 se aplica las tablas de "Inflación Mensual" del 
+            **BCRA** - Banco Central - Tasas de referencia
+            [https://www.bcra.gob.ar/](https://www.bcra.gob.ar/)
 
-            - **INDEC** - Índice de Precios al Consumidor (IPC)
-              [https://www.indec.gob.ar/](https://www.indec.gob.ar/)
+            3) Los indices **RIPTES** se obtienen de
+            [https://www.argentina.gob.ar/trabajo/seguridadsocial/ripte/]
 
-            - **BCRA** - Banco Central - Tasas de referencia
-              [https://www.bcra.gob.ar/](https://www.bcra.gob.ar/)
-
-            - **MTySS** - Ministerio de Trabajo - RIPTE
-              [https://www.argentina.gob.ar/trabajo](https://www.argentina.gob.ar/trabajo)
-
-            - **BNA** - Banco Nación - Tasas activas
-              [https://www.bna.com.ar/](https://www.bna.com.ar/)
-
-            - **SRT** - Superintendencia de Riesgos del Trabajo
-              [https://www.srt.gob.ar/](https://www.srt.gob.ar/)
+            4) Las tablas sobre minimos aplicables de las resoluciones de SRT y MTySS
+            [https://www.srt.gob.ar/](https://www.srt.gob.ar/)
             """)
         
         with info_tab3:
@@ -1201,26 +1202,7 @@ De la liquidación practicada, traslado a las partes por el plazo de cinco (5) d
             **DECRETO 1694/2009:**
             - Actualización de prestaciones según RIPTE
             - Metodología de aplicación del coeficiente
-
-            **JURISPRUDENCIA RELEVANTE:**
-
-            **SCBA "Barrios" (C. 124.096, 17/04/2024):**
-            - Inconstitucionalidad sobrevenida del Art. 7 Ley 23.928
-            - Actualización por RIPTE + 3% anual de interés puro
-            - Doctrina aplicable ante deterioro inflacionario
-
-            **SCBA "Muzychuk" (L. 120.800, 14/07/2025):**
-            - Inconstitucionalidad del Decreto 669/19
-            - IBM histórico actualizado exclusivamente por Art. 12 Ley 24.557
-
-            **PRINCIPIOS APLICABLES:**
-            - Razonabilidad (Art. 28 CN)
-            - Derecho de propiedad (Art. 17 CN)
-            - Reparación integral (Art. 19 CN)
-            - Tutela judicial efectiva
-            - Principio protectorio del derecho laboral
-            """)
-    
+            
     with tab6:
         st.subheader("🖨️ Generar PDF del Expediente")
         
@@ -1250,7 +1232,7 @@ De la liquidación practicada, traslado a las partes por el plazo de cinco (5) d
         with col2:
             caratula_juzgado = st.text_input(
                 "Tribunal",
-                value="Tribunal de Trabajo Nro. 2 Quilmes",
+                value="Tribunal de Trabajo",
                 key="pdf_juzgado"
             )
             
@@ -1405,7 +1387,7 @@ De la liquidación practicada, traslado a las partes por el plazo de cinco (5) d
                 </head>
                 <body>
                     <div class="header">
-                        <h1>PODER JUDICIAL DE LA PROVINCIA DE BUENOS AIRES</h1>
+                        <h1>JUDICIAL</h1>
                         <h2>{caratula_juzgado}</h2>
                     </div>
                     
@@ -1598,11 +1580,11 @@ else:
     
     with col2:
         st.markdown("""
-        ### ⚖️ Jurisprudencia
-        - Doctrina "Barrios" (SCBA 2024)
-        - Doctrina "Muzychuk" (SCBA 2025)
-        - Aplicación de pisos mínimos SRT
-        - Adicional 20% Ley 26.773
+        ### ⚖️ Uso judicial
+        - Para el apoyo en calculos sentencia
+        - Para el calculo en las audiencias.
+        - Para apoyo en la liquidación
+        - Uso en secretaria y relatoria.
         """)
     
     with col3:
@@ -1619,7 +1601,8 @@ st.markdown("---")
 st.markdown("""
 <div style='text-align: center; color: #666; padding: 20px;'>
     <p><strong>Calculadora Indemnizaciones LRT</strong><br>
-    Tribunal de Trabajo Nro. 2 Quilmes<br>
-    Versión 1.0</p>
+    Tribunal de Trabajo<br>
+    Versión 1.0 de prueba
+    Los calculos deben ser verificados manualmente</p>
 </div>
 """, unsafe_allow_html=True)
