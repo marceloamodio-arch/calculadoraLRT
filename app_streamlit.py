@@ -916,7 +916,7 @@ if st.session_state.results is not None:
                 <h3>INFLACIÓN ACUMULADA (Referencia)</h3>
                 <div class="result-amount">{NumberUtils.format_percentage(results.inflacion_acum_pct)}</div>
                 <div class="result-detail">
-                    Variación IPC del período
+                    Inflación acumulada en el período
                 </div>
             </div>
             """, unsafe_allow_html=True)
