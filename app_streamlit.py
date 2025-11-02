@@ -14,6 +14,7 @@ import math
 from dataclasses import dataclass
 from typing import Optional, Tuple
 import base64
+from decimal import Decimal, ROUND_HALF_UP
 
 # Configuración de la página
 st.set_page_config(
@@ -193,6 +194,12 @@ PATH_RIPTE = os.path.join(DATASET_DIR, "dataset_ripte.csv")
 PATH_TASA = os.path.join(DATASET_DIR, "dataset_tasa.csv")
 PATH_IPC = os.path.join(DATASET_DIR, "dataset_ipc.csv")
 PATH_PISOS = os.path.join(DATASET_DIR, "dataset_pisos.csv")
+
+def redondear(valor):
+    """Redondea a 2 decimales según criterio contable/judicial"""
+    if isinstance(valor, Decimal):
+        return valor.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+    return Decimal(str(valor)).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
 
 def safe_parse_date(s) -> Optional[date]:
     """Función corregida de parseo de fechas"""
@@ -614,7 +621,7 @@ class DataManager:
         if self.tasa_data.empty:
             return 0.0, capital_base
             
-        total_aporte_pct = 0.0
+        total_aporte_pct = Decimal('0.0')
         
         for _, row in self.tasa_data.iterrows():
             if "desde" in self.tasa_data.columns and not pd.isna(row.get("desde")):
@@ -645,12 +652,13 @@ class DataManager:
                 else:
                     continue
                 
-                aporte_pct = valor_mensual_pct * (dias_interseccion / 30.0)
-                total_aporte_pct += aporte_pct
+                aporte_pct = redondear(Decimal(str(valor_mensual_pct)) * (Decimal(str(dias_interseccion)) / Decimal('30.0')))
+                total_aporte_pct = redondear(total_aporte_pct + aporte_pct)
         
-        total_actualizado = capital_base * (1.0 + total_aporte_pct / 100.0)
+        capital_base_dec = Decimal(str(capital_base))
+        total_actualizado = redondear(capital_base_dec * (Decimal('1.0') + total_aporte_pct / Decimal('100.0')))
         
-        return total_aporte_pct, total_actualizado
+        return float(total_aporte_pct), float(total_actualizado)
     
     def calcular_inflacion(self, fecha_pmi: date, fecha_final: date) -> float:
         """Cálculo de inflación"""
@@ -693,17 +701,18 @@ class Calculator:
             capital_formula, piso_minimo, piso_norma, input_data.incapacidad_pct
         )
         
-        adicional_20_pct = capital_aplicado * 0.20 if input_data.incluir_20_pct else 0.0
-        capital_base = capital_aplicado + adicional_20_pct
+        adicional_20_pct = float(redondear(Decimal(str(capital_aplicado)) * Decimal('0.20'))) if input_data.incluir_20_pct else 0.0
+        capital_base = float(redondear(Decimal(str(capital_aplicado)) + Decimal(str(adicional_20_pct))))
         
         ripte_coef, ripte_pmi, ripte_final = self.data_manager.get_ripte_coeficiente(
             input_data.pmi_date, input_data.final_date
         )
-        ripte_actualizado = capital_base * ripte_coef
+        ripte_actualizado = float(redondear(Decimal(str(capital_base)) * Decimal(str(ripte_coef))))
         
         dias_transcurridos = (input_data.final_date - input_data.pmi_date).days
-        interes_puro_3_pct = ripte_actualizado * 0.03 * (dias_transcurridos / 365.0)
-        total_ripte_3 = ripte_actualizado + interes_puro_3_pct
+        factor_dias = Decimal(str(dias_transcurridos)) / Decimal('365.0')
+        interes_puro_3_pct = float(redondear(Decimal(str(ripte_actualizado)) * Decimal('0.03') * factor_dias))
+        total_ripte_3 = float(redondear(Decimal(str(ripte_actualizado)) + Decimal(str(interes_puro_3_pct))))
         
         tasa_activa_pct, total_tasa_activa = self.data_manager.calcular_tasa_activa(
             input_data.pmi_date, input_data.final_date, capital_base
@@ -735,7 +744,8 @@ class Calculator:
     
     def _calcular_capital_formula(self, input_data: InputData) -> float:
         """Calcula capital según fórmula"""
-        return input_data.ibm * 53 * (65 / input_data.edad) * (input_data.incapacidad_pct / 100)
+        capital = Decimal(str(input_data.ibm)) * Decimal('53') * (Decimal('65') / Decimal(str(input_data.edad))) * (Decimal(str(input_data.incapacidad_pct)) / Decimal('100'))
+        return float(redondear(capital))
     
     def _aplicar_piso_minimo(self, capital_formula: float, piso_minimo: Optional[float], 
                            piso_norma: str, incapacidad_pct: float) -> Tuple[float, bool, str, float]:
@@ -743,7 +753,7 @@ class Calculator:
         if piso_minimo is None:
             return capital_formula, False, "No se encontró piso mínimo para la fecha", 0.0
         
-        piso_proporcional = piso_minimo * (incapacidad_pct / 100)
+        piso_proporcional = float(redondear(Decimal(str(piso_minimo)) * (Decimal(str(incapacidad_pct)) / Decimal('100'))))
         
         if capital_formula >= piso_proporcional:
             return capital_formula, False, f"Supera piso mínimo {piso_norma}", piso_proporcional
