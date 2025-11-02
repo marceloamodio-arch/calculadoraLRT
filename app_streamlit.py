@@ -1495,7 +1495,7 @@ De la liquidación practicada, traslado a las partes por el plazo de cinco (5) d
                         <h3>📊 DETALLE ACTUALIZACIÓN RIPTE</h3>
                         <div class="formula-box">
                             <p><strong>RIPTE {mes_pmi}/{anio_pmi}:</strong> {results.ripte_pmi:,.2f}</p>
-                            <p><strong>RIPTE {mes_final}/{anio_final}:</strong> {results.ripte_final:,.2f}</p>
+                            <p><strong>RIPTE - ultimo indice al mes de {mes_final}/{anio_final}:</strong> {results.ripte_final:,.2f}</p>
                             <p><strong>Coeficiente:</strong> {results.ripte_coef:.2f} ({pct_ripte:.0f}%)</p>
                             <p><strong>Capital actualizado RIPTE:</strong> {NumberUtils.format_money(results.ripte_actualizado)}</p>
                             <p><strong>Interés puro 3% anual:</strong> {NumberUtils.format_money(results.interes_puro_3_pct)}</p>
