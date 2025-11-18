@@ -520,6 +520,10 @@ def generar_pdf(datos_calculo, datos_actualizacion):
         ['SAC Vacaciones', formato_moneda(datos_calculo['sac_vacaciones'])],
     ])
     
+    # Agregar otros conceptos si existe
+    if datos_calculo.get('otros_conceptos', 0) > 0:
+        data_conceptos.append(['Otros Conceptos', formato_moneda(datos_calculo['otros_conceptos'])])
+    
     t2 = Table(data_conceptos, colWidths=[10*cm, 4*cm])
     t2.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2E86AB')),
@@ -535,9 +539,10 @@ def generar_pdf(datos_calculo, datos_actualizacion):
     elements.append(t2)
     elements.append(Spacer(1, 0.5*cm))
     
-    # Total
+    # Total - usar total_final si existe, sino usar total
+    total_a_mostrar = datos_calculo.get('total_final', datos_calculo['total'])
     data_total = [
-        ['INDEMNIZACIÓN TOTAL', formato_moneda(datos_calculo['total'])]
+        ['INDEMNIZACIÓN TOTAL', formato_moneda(total_a_mostrar)]
     ]
     
     t3 = Table(data_total, colWidths=[10*cm, 4*cm])
@@ -732,7 +737,14 @@ with col_results:
             'sac_proporcional': float(sac_proporcional),
             'vacaciones': float(vacaciones),
             'sac_vacaciones': float(sac_vacaciones),
-            'total': float(total)
+            'total': float(total),
+            # Datos adicionales para detalles
+            'dias_trabajados_mes': dias_trabajados_mes,
+            'dias_integracion': dias_mes - dias_trabajados_mes if fecha_despido.day != dias_mes else 0,
+            'dias_desde_sac': dias_desde_sac,
+            'semestre_sac': '1er' if fecha_despido.month <= 6 else '2do',
+            'dias_vacaciones': dias_vacaciones,
+            'salarios_preaviso': 1 if años < 5 else 2
         }
         
         # Calcular actualizaciones
@@ -755,33 +767,91 @@ if 'datos_calculo' in st.session_state:
         
         datos = st.session_state.datos_calculo
         
-        # Mostrar conceptos de manera compacta
-        st.write(f"**Antigüedad Art. 245:** {formato_moneda(datos['antiguedad_245'])}")
+        # Texto para antigüedad
+        if datos['meses'] > 0:
+            texto_antiguedad = f"({datos['años']} años y {datos['meses']} meses)"
+        else:
+            texto_antiguedad = f"({datos['años']} años)"
+        
+        # Mostrar conceptos uno por uno con HTML
+        st.markdown(f"""
+<div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #eee;">
+    <span><strong>Antigüedad Art. 245</strong> {texto_antiguedad}:</span>
+    <span>{formato_moneda(datos['antiguedad_245'])}</span>
+</div>
+        """, unsafe_allow_html=True)
         
         if datos['sustitutiva_preaviso'] > 0:
-            st.write(f"**Sustitutiva de Preaviso:** {formato_moneda(datos['sustitutiva_preaviso'])}")
-            st.write(f"**SAC Preaviso:** {formato_moneda(datos['sac_preaviso'])}")
-        
-        st.write(f"**Días trabajados del Mes:** {formato_moneda(datos['dias_trabajados'])}")
-        
-        if datos['integracion_mes'] > 0:
-            st.write(f"**Integración mes de Despido:** {formato_moneda(datos['integracion_mes'])}")
-            st.write(f"**SAC Integración:** {formato_moneda(datos['sac_integracion'])}")
-        
-        st.write(f"**SAC Proporcional:** {formato_moneda(datos['sac_proporcional'])}")
-        st.write(f"**Vacaciones no Gozadas:** {formato_moneda(datos['vacaciones'])}")
-        st.write(f"**SAC Vacaciones:** {formato_moneda(datos['sac_vacaciones'])}")
+            salarios_txt = f"({datos['salarios_preaviso']} salario{'s' if datos['salarios_preaviso'] > 1 else ''})"
+            st.markdown(f"""
+<div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #eee;">
+    <span><strong>Sustitutiva de Preaviso</strong> {salarios_txt}:</span>
+    <span>{formato_moneda(datos['sustitutiva_preaviso'])}</span>
+</div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown(f"""
+<div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #eee;">
+    <span><strong>SAC Preaviso:</strong></span>
+    <span>{formato_moneda(datos['sac_preaviso'])}</span>
+</div>
+            """, unsafe_allow_html=True)
         
         st.markdown(f"""
-        <div style="background-color: #F18F01; padding: 8px 15px; border-radius: 5px; text-align: center; margin-top: 15px; display: inline-block; width: 100%;">
-            <span style="color: white; font-weight: bold; font-size: 14px; margin-right: 10px;">INDEMNIZACIÓN TOTAL:</span>
-            <span style="font-size: 18px; font-weight: bold; color: white;">{formato_moneda(datos['total'])}</span>
-        </div>
+<div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #eee;">
+    <span><strong>Días trabajados del Mes</strong> ({datos['dias_trabajados_mes']} días):</span>
+    <span>{formato_moneda(datos['dias_trabajados'])}</span>
+</div>
+        """, unsafe_allow_html=True)
+        
+        if datos['integracion_mes'] > 0:
+            st.markdown(f"""
+<div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #eee;">
+    <span><strong>Integración mes de Despido</strong> ({datos['dias_integracion']} días):</span>
+    <span>{formato_moneda(datos['integracion_mes'])}</span>
+</div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown(f"""
+<div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #eee;">
+    <span><strong>SAC Integración:</strong></span>
+    <span>{formato_moneda(datos['sac_integracion'])}</span>
+</div>
+            """, unsafe_allow_html=True)
+        
+        st.markdown(f"""
+<div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #eee;">
+    <span><strong>SAC Proporcional</strong> ({datos['dias_desde_sac']} días del {datos['semestre_sac']} semestre):</span>
+    <span>{formato_moneda(datos['sac_proporcional'])}</span>
+</div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown(f"""
+<div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #eee;">
+    <span><strong>Vacaciones no Gozadas</strong> ({datos['dias_vacaciones']} días):</span>
+    <span>{formato_moneda(datos['vacaciones'])}</span>
+</div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown(f"""
+<div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #eee;">
+    <span><strong>SAC Vacaciones:</strong></span>
+    <span>{formato_moneda(datos['sac_vacaciones'])}</span>
+</div>
+        """, unsafe_allow_html=True)
+        
+        # Total final (sin otros conceptos por ahora)
+        total_final = datos['total']
+        
+        st.markdown(f"""
+<div style="background-color: #F18F01; padding: 12px 20px; border-radius: 5px; text-align: center; margin-top: 8px; width: 100%;">
+    <div style="color: white; font-weight: bold; font-size: 16px; margin-bottom: 5px;">INDEMNIZACIÓN TOTAL</div>
+    <div style="font-size: 32px; font-weight: bold; color: white;">{formato_moneda(total_final)}</div>
+</div>
         """, unsafe_allow_html=True)
 
 # Actualizaciones centradas debajo
 if 'datos_actualizacion' in st.session_state:
-    st.markdown("---")
     st.subheader(f"📈 ACTUALIZACIONES AL {st.session_state.datos_calculo['fecha_liquidacion']}")
     
     col_act1, col_act2, col_act3 = st.columns(3)
@@ -816,8 +886,6 @@ if 'datos_actualizacion' in st.session_state:
         """, unsafe_allow_html=True)
     
     # Últimos datos disponibles
-    st.markdown("---")
-    
     # Obtener últimos datos disponibles
     ultimo_ripte_txt = ""
     ultimo_ipc_txt = ""
@@ -873,7 +941,7 @@ if 'datos_actualizacion' in st.session_state:
         border: 1px solid #d3d3d3;
         border-radius: 8px;
         padding: 10px 15px;
-        margin-top: 10px;
+        margin-top: 5px;
         background-color: #fff9c4;
         width: 100%;
     ">
@@ -885,8 +953,6 @@ if 'datos_actualizacion' in st.session_state:
     """, unsafe_allow_html=True)
     
     # Botón de PDF
-    st.markdown("---")
-    
     if st.button("📄 IMPRIMIR PDF", use_container_width=True, key="generar_pdf_button"):
         st.session_state.mostrar_campos_pdf = True
     
@@ -916,9 +982,6 @@ if 'datos_actualizacion' in st.session_state:
             use_container_width=True,
             key="download_pdf_button"
         )
-
-# Información sobre cálculos (fuera del flujo principal)
-st.markdown("---")
 
 # Información sobre cálculos
 with st.expander("ℹ️ INFORMACIÓN SOBRE CÁLCULOS Y FUENTES"):
