@@ -28,150 +28,13 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# CSS personalizado
+# CSS personalizado - simplificado para mejor compatibilidad
 st.markdown("""
 <style>
-    /* Colores principales */
-    :root {
-        --primary: #2E86AB;
-        --secondary: #A23B72;
-        --success: #F18F01;
-        --info: #C73E1D;
-        --light: #F8F9FA;
-        --dark: #343A40;
-        --highlight-ripte: #E8F5E8;
-        --highlight-tasa: #E8F5E8;
-    }
-    
-    /* Ocultar Deploy y menú de 3 puntos */
-    button[kind="header"] {
-        display: none;
-    }
-    
-    /* Ocultar los 3 puntos verticales */
+    /* Ocultar Deploy y menú */
+    button[kind="header"], footer, 
     [data-testid="stHeader"] svg[viewBox="0 0 16 16"] {
-        display: none;
-    }
-    
-    /* Ocultar footer */
-    footer {
-        display: none;
-    }
-    
-    /* Header personalizado */
-    .main-header {
-        background-color: #2E86AB;
-        padding: 20px;
-        border-radius: 10px;
-        text-align: center;
-        color: white;
-        margin-bottom: 30px;
-    }
-    
-    .main-header h1 {
-        margin: 0;
-        font-size: 28px;
-        font-weight: bold;
-    }
-    
-    .main-header h2 {
-        margin: 5px 0 0 0;
-        font-size: 18px;
-        font-weight: normal;
-    }
-    
-    /* Tarjetas de resultados */
-    .result-card {
-        background-color: #F8F9FA;
-        border-left: 4px solid #2E86AB;
-        padding: 20px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-    }
-    
-    .result-card.highlight-ripte {
-        background-color: #E8F5E8;
-        border-left-color: #28a745;
-    }
-    
-    .result-card.highlight-tasa {
-        background-color: #E8F5E8;
-        border-left-color: #28a745;
-    }
-    
-    .result-card h3 {
-        color: #2E86AB;
-        font-size: 16px;
-        margin-bottom: 10px;
-    }
-    
-    .result-amount {
-        font-size: 32px;
-        font-weight: bold;
-        color: #343A40;
-        margin: 10px 0;
-    }
-    
-    .result-detail {
-        font-size: 14px;
-        color: #666;
-        margin-top: 10px;
-    }
-    
-    /* Alertas */
-    .alert-box {
-        background-color: #C73E1D;
-        color: white;
-        padding: 15px;
-        border-radius: 8px;
-        margin: 20px 0;
-    }
-    
-    .alert-box h4 {
-        margin-top: 0;
-    }
-    
-    /* Fórmula */
-    .formula-box {
-        background-color: #e7f3ff;
-        border: 1px solid #b3d9ff;
-        padding: 15px;
-        border-radius: 8px;
-        font-family: monospace;
-        margin: 20px 0;
-    }
-    
-    /* Botones personalizados */
-    .stButton>button {
-        background-color: #2E86AB;
-        color: white;
-        font-weight: bold;
-        border-radius: 5px;
-        padding: 10px 25px;
-        border: none;
-    }
-    
-    .stButton>button:hover {
-        background-color: #1a5f7a;
-    }
-    
-    /* Tablas */
-    .dataframe {
-        font-size: 14px;
-    }
-    
-    /* Info boxes */
-    .info-section {
-        background-color: #F8F9FA;
-        border-left: 4px solid #F18F01;
-        padding: 15px;
-        border-radius: 8px;
-        margin: 20px 0;
-    }
-    
-    .info-section h4 {
-        color: #2E86AB;
-        margin-top: 0;
+        display: none !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -598,11 +461,11 @@ def generar_pdf(datos_calculo, datos_actualizacion):
     buffer.seek(0)
     return buffer
 
-# Header
+# Header con estilo inline completo
 st.markdown("""
-<div class="main-header">
-    <h1>⚖️ CALCULADORA DE DESPIDOS</h1>
-    <h2>Sistema de Cálculo de Indemnizaciones Laborales</h2>
+<div style="background-color: #2E86AB; padding: 20px; border-radius: 10px; text-align: center; color: white; margin-bottom: 30px;">
+    <h1 style="margin: 0; font-size: 28px; font-weight: bold; color: white;">⚖️ CALCULADORA DE DESPIDOS</h1>
+    <h2 style="margin: 5px 0 0 0; font-size: 18px; font-weight: normal; color: white;">Sistema de Cálculo de Indemnizaciones Laborales</h2>
 </div>
 """, unsafe_allow_html=True)
 
@@ -773,85 +636,47 @@ if 'datos_calculo' in st.session_state:
         else:
             texto_antiguedad = f"({datos['años']} años)"
         
-        # Mostrar conceptos uno por uno con HTML
-        st.markdown(f"""
-<div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #eee;">
-    <span><strong>Antigüedad Art. 245</strong> {texto_antiguedad}:</span>
-    <span>{formato_moneda(datos['antiguedad_245'])}</span>
-</div>
-        """, unsafe_allow_html=True)
+        # Construir tabla de conceptos de forma compacta
+        conceptos_data = []
+        
+        conceptos_data.append(["**Antigüedad Art. 245** " + texto_antiguedad, formato_moneda(datos['antiguedad_245'])])
         
         if datos['sustitutiva_preaviso'] > 0:
             salarios_txt = f"({datos['salarios_preaviso']} salario{'s' if datos['salarios_preaviso'] > 1 else ''})"
-            st.markdown(f"""
-<div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #eee;">
-    <span><strong>Sustitutiva de Preaviso</strong> {salarios_txt}:</span>
-    <span>{formato_moneda(datos['sustitutiva_preaviso'])}</span>
-</div>
-            """, unsafe_allow_html=True)
-            
-            st.markdown(f"""
-<div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #eee;">
-    <span><strong>SAC Preaviso:</strong></span>
-    <span>{formato_moneda(datos['sac_preaviso'])}</span>
-</div>
-            """, unsafe_allow_html=True)
+            conceptos_data.append(["**Sustitutiva de Preaviso** " + salarios_txt, formato_moneda(datos['sustitutiva_preaviso'])])
+            conceptos_data.append(["**SAC Preaviso**", formato_moneda(datos['sac_preaviso'])])
         
-        st.markdown(f"""
-<div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #eee;">
-    <span><strong>Días trabajados del Mes</strong> ({datos['dias_trabajados_mes']} días):</span>
-    <span>{formato_moneda(datos['dias_trabajados'])}</span>
-</div>
-        """, unsafe_allow_html=True)
+        conceptos_data.append([f"**Días trabajados del Mes** ({datos['dias_trabajados_mes']} días)", formato_moneda(datos['dias_trabajados'])])
         
         if datos['integracion_mes'] > 0:
-            st.markdown(f"""
-<div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #eee;">
-    <span><strong>Integración mes de Despido</strong> ({datos['dias_integracion']} días):</span>
-    <span>{formato_moneda(datos['integracion_mes'])}</span>
-</div>
-            """, unsafe_allow_html=True)
-            
-            st.markdown(f"""
-<div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #eee;">
-    <span><strong>SAC Integración:</strong></span>
-    <span>{formato_moneda(datos['sac_integracion'])}</span>
-</div>
-            """, unsafe_allow_html=True)
+            conceptos_data.append([f"**Integración mes de Despido** ({datos['dias_integracion']} días)", formato_moneda(datos['integracion_mes'])])
+            conceptos_data.append(["**SAC Integración**", formato_moneda(datos['sac_integracion'])])
         
-        st.markdown(f"""
-<div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #eee;">
-    <span><strong>SAC Proporcional</strong> ({datos['dias_desde_sac']} días del {datos['semestre_sac']} semestre):</span>
-    <span>{formato_moneda(datos['sac_proporcional'])}</span>
-</div>
-        """, unsafe_allow_html=True)
+        conceptos_data.append([f"**SAC Proporcional** ({datos['dias_desde_sac']} días del {datos['semestre_sac']} sem.)", formato_moneda(datos['sac_proporcional'])])
+        conceptos_data.append([f"**Vacaciones no Gozadas** ({datos['dias_vacaciones']} días)", formato_moneda(datos['vacaciones'])])
+        conceptos_data.append(["**SAC Vacaciones**", formato_moneda(datos['sac_vacaciones'])])
         
-        st.markdown(f"""
-<div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #eee;">
-    <span><strong>Vacaciones no Gozadas</strong> ({datos['dias_vacaciones']} días):</span>
-    <span>{formato_moneda(datos['vacaciones'])}</span>
-</div>
-        """, unsafe_allow_html=True)
+        # Crear DataFrame para mostrar como tabla
+        df_conceptos = pd.DataFrame(conceptos_data, columns=["Concepto", "Importe"])
         
-        st.markdown(f"""
-<div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #eee;">
-    <span><strong>SAC Vacaciones:</strong></span>
-    <span>{formato_moneda(datos['sac_vacaciones'])}</span>
-</div>
-        """, unsafe_allow_html=True)
+        # Mostrar como markdown table compacta
+        for concepto, importe in conceptos_data:
+            col_c, col_i = st.columns([3, 1])
+            with col_c:
+                st.markdown(concepto, unsafe_allow_html=True)
+            with col_i:
+                st.markdown(f"**{importe}**")
         
-        # Total final (sin otros conceptos por ahora)
+        # Total final
         total_final = datos['total']
-        
-        st.markdown(f"""
-<div style="background-color: #F18F01; padding: 12px 20px; border-radius: 5px; text-align: center; margin-top: 8px; width: 100%;">
-    <div style="color: white; font-weight: bold; font-size: 16px; margin-bottom: 5px;">INDEMNIZACIÓN TOTAL</div>
-    <div style="font-size: 32px; font-weight: bold; color: white;">{formato_moneda(total_final)}</div>
-</div>
-        """, unsafe_allow_html=True)
+        st.metric(
+            label="INDEMNIZACIÓN TOTAL",
+            value=formato_moneda(total_final)
+        )
 
 # Actualizaciones centradas debajo
 if 'datos_actualizacion' in st.session_state:
+    st.markdown("---")
     st.subheader(f"📈 ACTUALIZACIONES AL {st.session_state.datos_calculo['fecha_liquidacion']}")
     
     col_act1, col_act2, col_act3 = st.columns(3)
@@ -859,34 +684,33 @@ if 'datos_actualizacion' in st.session_state:
     datos_act = st.session_state.datos_actualizacion
     
     with col_act1:
-        st.markdown(f"""
-        <div class="result-card highlight-ripte">
-            <h3>RIPTE + 3%</h3>
-            <div class="result-amount">{formato_moneda(datos_act['ripte'])}</div>
-            <div class="result-detail">Desde {st.session_state.datos_calculo['fecha_despido']} hasta {st.session_state.datos_calculo['fecha_liquidacion']}</div>
-        </div>
-        """, unsafe_allow_html=True)
+        st.success("**RIPTE + 3%**")
+        st.metric(
+            label="Monto Actualizado",
+            value=formato_moneda(datos_act['ripte']),
+            label_visibility="collapsed"
+        )
+        st.caption(f"Desde {st.session_state.datos_calculo['fecha_despido']} hasta {st.session_state.datos_calculo['fecha_liquidacion']}")
     
     with col_act2:
-        st.markdown(f"""
-        <div class="result-card highlight-tasa">
-            <h3>Tasa Activa</h3>
-            <div class="result-amount">{formato_moneda(datos_act['tasa'])}</div>
-            <div class="result-detail">Desde {st.session_state.datos_calculo['fecha_despido']} hasta {st.session_state.datos_calculo['fecha_liquidacion']}</div>
-        </div>
-        """, unsafe_allow_html=True)
+        st.success("**Tasa Activa**")
+        st.metric(
+            label="Monto Actualizado",
+            value=formato_moneda(datos_act['tasa']),
+            label_visibility="collapsed"
+        )
+        st.caption(f"Desde {st.session_state.datos_calculo['fecha_despido']} hasta {st.session_state.datos_calculo['fecha_liquidacion']}")
     
     with col_act3:
-        st.markdown(f"""
-        <div class="result-card" style="border-left-color: #A23B72;">
-            <h3>IPC (Ref.)</h3>
-            <div class="result-amount">{datos_act['ipc']:.2f}%</div>
-            <div class="result-detail">Variación inflacionaria del período</div>
-        </div>
-        """, unsafe_allow_html=True)
+        st.info("**IPC (Ref.)**")
+        st.metric(
+            label="Variación",
+            value=f"{datos_act['ipc']:.2f}%",
+            label_visibility="collapsed"
+        )
+        st.caption("Variación inflacionaria del período")
     
     # Últimos datos disponibles
-    # Obtener últimos datos disponibles
     ultimo_ripte_txt = ""
     ultimo_ipc_txt = ""
     ultima_tasa_txt = ""
@@ -920,7 +744,7 @@ if 'datos_actualizacion' in st.session_state:
                 año_ipc = fecha_ipc.year
             ultimo_ipc_txt = f"IPC {mes_ipc}/{año_ipc}: {variacion_ipc:.2f}%"
     
-    # TASA ACTIVA - tomar el primer registro (dataset ordenado descendente)
+    # TASA ACTIVA
     if not df_tasa.empty:
         ultima_tasa = df_tasa.iloc[0]
         valor_tasa = ultima_tasa['Valor']
@@ -932,25 +756,13 @@ if 'datos_actualizacion' in st.session_state:
                 fecha_txt = pd.to_datetime(fecha_hasta).strftime("%d/%m/%Y")
             ultima_tasa_txt = f"TASA ACTIVA {fecha_txt}: {valor_tasa:.2f}%"
     
-    # Mostrar cuadro
-    st.markdown(f"""
-    <div class="formula-box" style="
-        color: #000;
-        font-family: 'Source Sans Pro', sans-serif;
-        font-size: 14px;
-        border: 1px solid #d3d3d3;
-        border-radius: 8px;
-        padding: 10px 15px;
-        margin-top: 5px;
-        background-color: #fff9c4;
-        width: 100%;
-    ">
-        <strong>📊 Últimos Datos Disponibles:</strong><br>
-        {ultimo_ripte_txt}<br>
-        {ultimo_ipc_txt}<br>
-        {ultima_tasa_txt}
-    </div>
-    """, unsafe_allow_html=True)
+    # Mostrar cuadro de últimos datos
+    st.warning(f"""
+    **📊 Últimos Datos Disponibles:**  
+    {ultimo_ripte_txt}  
+    {ultimo_ipc_txt}  
+    {ultima_tasa_txt}
+    """)
     
     # Botón de PDF
     if st.button("📄 IMPRIMIR PDF", use_container_width=True, key="generar_pdf_button"):
@@ -1032,10 +844,5 @@ with st.expander("ℹ️ INFORMACIÓN SOBRE CÁLCULOS Y FUENTES"):
 
 # Footer
 st.markdown("---")
-st.markdown("""
-<div style="text-align: center; color: #666; padding: 20px;">
-    <p><strong>CALCULADORA DE DESPIDOS</strong></p>
-    <p>Sistema de Cálculo de Indemnizaciones Laborales</p>
-    <p style="font-size: 12px;">Los resultados son aproximados y no constituyen asesoramiento legal.</p>
-</div>
-""", unsafe_allow_html=True)
+st.caption("**CALCULADORA DE DESPIDOS** | Sistema de Cálculo de Indemnizaciones Laborales")
+st.caption("Los resultados son aproximados y no constituyen asesoramiento legal.")
